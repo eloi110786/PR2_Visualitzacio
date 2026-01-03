@@ -17,3 +17,5 @@ Aqui es pot trobar els arxius de la PR2 de Visualitzacio:
 7- Dataset original (autos_espana.csv)
 
 9- Dataset net (dataset_final_cotxe.csv)
+
+10 - web del dataset https://www.kaggle.com/datasets/gandpablo/cars-prices-for-machine-learning
