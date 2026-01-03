@@ -12,7 +12,7 @@ Aqui es pot trobar els arxius de la PR2 de Visualitzacio:
 
 5- Visualització R (depreciacio_km_final.png)
 
-6- Arxiu Power BI (PR2_Eloi_Arjonav2.pbix)
+6- Arxiu Power BI (PR2_Eloi_Arjonav3.pbix)
 
 7- Dataset original (autos_espana.csv)
 
