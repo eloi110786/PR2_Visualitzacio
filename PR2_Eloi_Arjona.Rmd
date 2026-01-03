@@ -1,0 +1,343 @@
+---
+title: "PR2_ Compra_venta_coches"
+author: "Eloi"
+date: "2025-12-28"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages
+
+```{r packages}
+library("ggplot2")
+library("fitdistrplus")
+library("MASS")
+library("survival")
+library("ggstatsplot")
+library("tidyverse")
+```
+
+## Càrrega arxius i dimensions (N x M)
+
+```{r load data}
+x=read.csv("autos_espana.csv", stringsAsFactors = T)
+dim(x)
+```
+
+## Neteja de dades
+
+Primer veurem la estrucutra del datatest
+
+```{r summary, echo=FALSE}
+summary(x)
+```
+
+Per respondre a les preguntes realitzades al document entregat a PR1 ens cetrarem en netajar les següents columnes:
+
+Price, KM,	CV,	Weight, Oto100, Sticker,Location, Brand, Fuel, Transmission	
+
+A part de les variables que creare, posteriorment:
+
+
+```{r summary_utiltitat, echo=FALSE}
+# 1. Definim la llista de variables que farem servir per a les 5 preguntes
+variables_utilitat <- c("Price", "KM", "CV", "Weight", "Year", 
+                        "Sticker", "Location", "Brand", "Fuel", "X0to100")
+
+# 2. Mostrem el sumari només d'aquestes columnes
+summary(x[, variables_utilitat])
+```     
+
+### Location
+
+Comp podem veure te 1139 fila buides per tant les eliminem:
+
+```{r location, echo=FALSE}
+# 1. Filtrem per eliminar els buits i els NAs a Location
+x_neta <- x %>%
+  filter(Location != "" & !is.na(Location))
+
+# 2. (Opcional) Eliminar el nivell buit del factor
+# Com que vas carregar amb stringsAsFactors = T, el nivell "" encara existirà
+x_neta$Location <- droplevels(x_neta$Location)
+
+# 3. Comprovem quantes files han quedat
+dim(x_neta)
+summary(x_neta$Location)
+```   
+Com podem veure hi ha 49 casos amb "La" es comú amb molts datatesr Españols que la es refereixi a "La CORUÑA" per tant tornarem faré aquest cambi, També tenim el mateix amb "Ciudad" que es refereix a "Ciudad Real"
+
+```{r La, echo=FALSE}
+# 1. Passem la columna a text per poder modificar-la
+x_neta$Location <- as.character(x_neta$Location)
+
+# 2. Substituïm "La" per "La Coruña"
+x_neta$Location[x_neta$Location == "La"] <- "La Coruña"
+
+# 3. Substituïm Ciudad" per "La Coruña"
+x_neta$Location[x_neta$Location == "Ciudad"] <- "Ciudad Real"
+
+# 4. La tornem a convertir en Factor (important per als gràfics i el mapa)
+x_neta$Location <- as.factor(x_neta$Location)
+
+
+# 6. Verifiquem el canvi
+summary(x_neta$Location)
+```  
+
+si tornem a fer el sumary:
+
+```{r summary x_neta, echo=FALSE}
+
+summary(x_neta[, variables_utilitat])
+```  
+### Sticker
+
+Veiem que hi ha 20 filas que no tenen Sticker, son coches DIESEl del 2004 y 2005 segon la DGT aquest coches no tenen etiquetes, per tant posaré sense etiqueta
+
+```{r sticker, echo=FALSE}
+
+# 1. Creem la taula amb els 20 casos problemàtics
+taula_revisio <- x_neta %>%
+  filter(Sticker == "" | is.na(Sticker)) %>%
+  select(Brand, Name, Year, Fuel)
+
+# 2. Mostrem la taula per pantalla
+print(taula_revisio)
+
+x_neta <- x_neta %>%
+  mutate(
+    Sticker = as.character(Sticker),
+    
+    # Assignem només als que estan buits
+    Sticker = ifelse(Sticker == "" | is.na(Sticker), "SENSE_ETIQUETA", Sticker),
+    
+    Sticker = as.factor(Sticker)
+  )
+
+# Comprova com ha quedat ara el resum
+table(x_neta$Sticker)
+
+``` 
+Viem com queda el dataset:
+
+```{r summary x_neta2, echo=FALSE}
+
+summary(x_neta[, variables_utilitat])
+```  
+### Weight
+
+Veiem quins models son els NA's:
+
+```{r weight, echo=FALSE}
+# 1. Creem la taula per veure quins cotxes no tenen pes
+taula_pes_buit <- x_neta %>%
+  filter(is.na(Weight)) %>%
+  select(Brand, Name, Year, Fuel, CV) # Afegim CV perquè ajuda a identificar el motor
+
+# 2. Mostrem els resultats
+print(taula_pes_buit)
+
+```  
+He buscat el pes orientatiu d'aquest vehiscles : 
+
+```{r weight_solucio, echo=FALSE}
+x_neta <- x_neta %>%
+  mutate(
+    # Passem Name a text per identificar-los bé
+    Name = as.character(Name),
+    
+    # Assignem el pes segons el nom del model on el pes sigui NA
+    Weight = case_when(
+      !is.na(Weight) ~ Weight,  # Si ja té pes, el mantenim
+      
+      grepl("Rimor", Name, ignore.case = TRUE) ~ 3000,   # Autocaravana
+      grepl("Daily", Name, ignore.case = TRUE) ~ 2200,   # Furgoneta gran
+      grepl("Master", Name, ignore.case = TRUE) ~ 2000,  # Furgoneta mitjana
+      grepl("YOYO", Name, ignore.case = TRUE)   ~ 850,    # Micro-cotxe elèctric
+      
+      TRUE ~ Weight # Per a qualsevol altre cas no previst
+    )
+  )
+
+# Comprovem que ja no quedin NAs a Weight
+sum(is.na(x_neta$Weight))
+
+summary(x_neta[, variables_utilitat])
+
+```
+
+
+### X0to100 
+
+Ara interarem buscar X0to100 del NAs per marcar y intnetarem arreglar 352 es imposible que um cotche triga practicament 6 minuts en arribar el 100 km. Amb aquest codi calculem la mitjana del mateix model de cotxe.
+
+```{r X0to100, echo=FALSE}
+x_neta <- x_neta %>%
+  # 1. Convertim l'error (352) en NA perquè es pugui imputar
+  mutate(X0to100 = ifelse(X0to100 > 50, NA, X0to100)) %>%
+  
+  # 2. Imputem per Marca i Nom (com hem fet amb el pes)
+  group_by(Brand, Name) %>%
+  mutate(X0to100 = ifelse(is.na(X0to100), 
+                          mean(X0to100, na.rm = TRUE), 
+                          X0to100)) %>%
+  ungroup() %>%
+  
+  # 3. Si encara queda algun NA, imputem per Marca
+  group_by(Brand) %>%
+  mutate(X0to100 = ifelse(is.na(X0to100), 
+                          mean(X0to100, na.rm = TRUE), 
+                          X0to100)) %>%
+  ungroup()
+
+# Comprovació final del sumari de l'acceleració
+summary(x_neta$X0to100)
+```
+
+Aquest  13 valors han quedat buits perquè, segurament, pertanyen a marques on el el dataset no hi ha registres d'acceleració de Marca o model.
+Per solucionar-ho definitivament i arribar a 0 NAs, aplicarem la mediana global del dataset només a aquests 13 casos restants. 
+He fet servir la mediana (el valor central) en lloc de la mitjana perquè és més segura: evita que els cotxes esportius molt ràpids o els camions molt lents distorsionin el valor que els donem a aquests 13 cotxes.
+
+
+```{r X0to100_mediana, echo=FALSE}
+# Imputació final amb la mediana de tot el dataset per als casos orfes
+x_neta <- x_neta %>%
+  mutate(X0to100 = ifelse(is.na(X0to100), 
+                          median(X0to100, na.rm = TRUE), 
+                          X0to100))
+
+# Comprovació final absoluta
+summary(x_neta$X0to100)
+summary(x_neta[, variables_utilitat])
+```
+## Noves columnes
+
+Aquestes mesures les pensava crear amb DAx per fer les grafiques a Power BI pero en aquest cas les creare com a noves columnes:
+
+
+Antiguitat: Variable fonamental per a l'Anàlisi de Depreciació. Ens permet segmentar el dataset en cotxes "Nous", "Semi-nous" i "Vells".
+
+
+Ràtio Potència/Pes: Mesura l'agilitat del cotxe. És la mètrica d'originalitat que ens demanaven. Un valor alt indica un cotxe esportiu o molt eficient en la seva relació pes-potència.
+
+
+Tram_KM: Agrupa els KM. Permet comparar si Seat aguanta millor el preu que Peugeot en el tram de "50k-100k"
+
+
+Preu_per_CV:Indica quant paga el client per cada unitat de potència. Molt útil per comparar si les marques "Premium" (BMW, Mercedes) cobren el cavall de potència més car que les marques "Generalistes" (Seat, KIA).
+
+
+Preu perkme:Relaciona el valor residual del cotxe amb el seu ús. Els cotxes amb un valor molt baix aquí són els que més s'han devaluat per quilòmetre recorregut.
+
+
+Depreciació Anual: És una aproximació de la pèrdua de valor. Ens diu, de mitjana, quants euros val el cotxe per cada any que té.
+
+
+```{r noves_columnes, echo=FALSE}
+
+x_final <- x_neta %>%
+  mutate(
+    # 1. ANTIGUITAT (Pregunta Geoespacial)
+    Antiguitat = 2025 - Year,
+    
+    # 2. RÀTIO POTÈNCIA/PES (Pregunta de Rendiment - Originalitat)
+    Ratio_Pot_Pes = CV / Weight,
+    
+    # 3. TRAMS DE KM (Pregunta de Marques i Trams)
+    Tram_KM = cut(KM, 
+                  breaks = c(0, 20000, 50000, 100000, 200000, Inf), 
+                  labels = c("0-20k", "20k-50k", "50k-100k", "100k-200k", "+200k"),
+                  include.lowest = TRUE),
+    
+    # 4. PREU PER CAVALL (Pregunta de Valoració Tècnica)
+    Preu_per_CV = Price / CV,
+    
+    # 5. DEPRECIACIÓ ANUAL (Pregunta de Depreciació Local)
+    Depreciacio_Anual = Price / pmax(Antiguitat, 1),
+    
+    # 6. PREU PER KM (Pregunta de Depreciació Clàssica)
+    Preu_per_KM = Price / pmax(KM, 1)
+  )
+
+# Comprovem que tot s'ha creat correctament
+summary(x_final[, c("Antiguitat", "Ratio_Pot_Pes", "Preu_per_CV", "Depreciacio_Anual", "Preu_per_KM")])
+```
+##Visualitzacions
+### Gràfic de Correlació (Heatmap)
+
+Mostra d'un cop d'ull quines variables influeixen realment en el preu. Si el coeficient és proper a 1, la relació és directa.
+
+
+```{r grafic_correlació, echo=FALSE}
+
+# Millorem l'estètica i guardem en alta resolució
+png("correlacio_final.png", width = 1000, height = 1000, res = 120) # Crea un fitxer d'alta qualitat
+
+library(corrplot)
+library(RColorBrewer) # Per a millors colors
+
+# 1. Selecció neta de variables
+vars_video <- x_final %>% 
+  select(Price, KM, CV, Weight, Antiguitat, 
+         Ratio_Pot_Pes, Preu_per_CV, Preu_per_KM)
+
+# 2. Matriu
+M <- cor(vars_video, use="complete.obs")
+
+# 3. Gràfic estilitzat
+corrplot(M, 
+         method = "color",           # Quadrats de color més moderns
+         col = brewer.pal(n = 8, name = "RdBu"), # Blau (positiu) i Vermell (negatiu)
+         type = "upper",             # Només la part de dalt
+         order = "hclust",           # Agrupa variables que es comporten igual
+         addCoef.col = "black",      # Números en negre
+         number.cex = 0.8,           # Mida dels números
+         tl.col = "black",           # Color de les etiquetes
+         tl.srt = 45,                # Angle de les lletres
+         tl.cex = 1.1,               # Mida de les lletres (més grans)
+         diag = FALSE,               # Treiem la diagonal (que sempre és 1)
+         mar = c(0,0,2,0),
+         title = "Factors que influeixen en el preu del vehicle")
+
+dev.off() # Tanca el fitxer i el guarda
+```
+### La Corba de Depreciació Real
+
+Ara mostra la corba de epeteciació real
+
+
+```{r grafic_correlació_2, echo=FALSE}
+# Preparem el fitxer d'alta resolució
+png("depreciacio_km_final.png", width = 1200, height = 800, res = 120)
+
+# Creem el gràfic
+ggplot(x_final, aes(x = KM, y = Price)) +
+  # Punts en blau molt claret per no saturar
+  geom_point(alpha = 0.2, color = "#3498db", size = 1) + 
+  # La línia de tendència "suau" en vermell
+  geom_smooth(method = "gam", color = "#e74c3c", size = 1.5) +
+  # Posem noms clars als eixos
+  labs(title = "Anàlisi de Depreciació: Com cau el preu segons el quilometratge",
+       subtitle = "La línia vermella mostra la pèrdua de valor real del mercat",
+       x = "Quilòmetres recorreguts (KM)", 
+       y = "Preu de venda (€)") +
+  # Un disseny net i professional
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold", size = 16))
+
+dev.off() # Hauria de tornar a dir "null device 1"
+
+```
+
+
+## Exportem dataset:
+```{r export:dataset, echo=FALSE}
+write.csv(x_final, "dataset_final_cotxe.csv", row.names = FALSE)
+
+```
