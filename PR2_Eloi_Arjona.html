@@ -389,7 +389,7 @@ dim(x)</code></pre>
 </div>
 <div id="neteja-de-dades" class="section level2">
 <h2>Neteja de dades</h2>
-<p>Primer veurem la estrucutra del datatest</p>
+<p>Primer veurem la estructura del datatest</p>
 <pre class="r"><code>summary(x)</code></pre>
 <pre><code>##        X               Brand                  Name             Sticker    
 ##  Min.   :   0   Seat      : 535   Seat Ibiza    : 209              :  32  
@@ -440,10 +440,10 @@ dim(x)</code></pre>
 ##  Max.   :5.000   Max.   :61990  
 ##  NA&#39;s   :7       NA&#39;s   :7</code></pre>
 <p>Per respondre a les preguntes realitzades al document entregat a PR1
-ens cetrarem en netajar les següents columnes:</p>
+ens centrarem en netejar les següents columnes:</p>
 <p>Price, KM, CV, Weight, Oto100, Sticker,Location, Brand, Fuel,
 Transmission</p>
-<p>A part de les variables que creare, posteriorment:</p>
+<p>A part de les variables que crearé, posteriorment:</p>
 <pre class="r"><code># 1. Definim la llista de variables que farem servir per a les 5 preguntes
 variables_utilitat &lt;- c(&quot;Price&quot;, &quot;KM&quot;, &quot;CV&quot;, &quot;Weight&quot;, &quot;Year&quot;, 
                         &quot;Sticker&quot;, &quot;Location&quot;, &quot;Brand&quot;, &quot;Fuel&quot;, &quot;X0to100&quot;)
@@ -497,10 +497,10 @@ dim(x_neta)</code></pre>
 ##          6         49       1093        253        147         43         30 
 ## Pontevedra  Santander    Sevilla     Toledo   Valencia    Vizcaya   Zaragoza 
 ##         58         58        201         95        422        184         63</code></pre>
-<p>Com podem veure hi ha 49 casos amb “La” es comú amb molts datatesr
-Españols que la es refereixi a “La CORUÑA” per tant tornarem faré aquest
-cambi, També tenim el mateix amb “Ciudad” que es refereix a “Ciudad
-Real”</p>
+<p>Com podem veure hi ha 49 casos amb “La” és comú amb molts datatesr
+Espanyols que la es refereixi a “La CORUÑA” per tant tornarem faré
+aquest canvi, També tenim el mateix amb “Ciudad” que es refereix a
+“Ciudad Real”</p>
 <pre class="r"><code># 1. Passem la columna a text per poder modificar-la
 x_neta$Location &lt;- as.character(x_neta$Location)
 
@@ -526,7 +526,7 @@ summary(x_neta$Location)</code></pre>
 ##         147          43          30          58          58         201 
 ##      Toledo    Valencia     Vizcaya    Zaragoza 
 ##          95         422         184          63</code></pre>
-<p>si tornem a fer el sumary:</p>
+<p>si tornem a fer sumary:</p>
 <pre class="r"><code>summary(x_neta[, variables_utilitat])</code></pre>
 <pre><code>##      Price             KM                CV          Weight          Year     
 ##  Min.   : 1300   Min.   :      5   Min.   : 20   Min.   : 790   Min.   :2000  
@@ -555,9 +555,9 @@ summary(x_neta$Location)</code></pre>
 </div>
 <div id="sticker" class="section level3">
 <h3>Sticker</h3>
-<p>Veiem que hi ha 20 filas que no tenen Sticker, son coches DIESEl del
-2004 y 2005 segon la DGT aquest coches no tenen etiquetes, per tant
-posaré sense etiqueta</p>
+<p>Veiem que hi ha 20 files que no tenen Sticker, són cotxes DIESEl del
+2004 i 2005 segons la DGT aquest cotxes no tenen etiquetes, per tant,
+posaré sense etiqueta.</p>
 <pre class="r"><code># 1. Creem la taula amb els 20 casos problemàtics
 taula_revisio &lt;- x_neta %&gt;%
   filter(Sticker == &quot;&quot; | is.na(Sticker)) %&gt;%
@@ -659,7 +659,7 @@ print(taula_pes_buit)</code></pre>
 ## 18 Renault   Renault Master 2023    Diésel 145
 ## 19     XEV         XEV YOYO 2022 Eléctrico  20
 ## 20 Renault   Renault Master 2023    Diésel 145</code></pre>
-<p>He buscat el pes orientatiu d’aquest vehiscles :</p>
+<p>He buscat el pes orientatiu d’aquest vehiscles:</p>
 <pre class="r"><code>x_neta &lt;- x_neta %&gt;%
   mutate(
     # Passem Name a text per identificar-los bé
@@ -709,10 +709,10 @@ sum(is.na(x_neta$Weight))</code></pre>
 </div>
 <div id="x0to100" class="section level3">
 <h3>X0to100</h3>
-<p>Ara interarem buscar X0to100 del NAs per marcar y intnetarem arreglar
-352 es imposible que um cotche triga practicament 6 minuts en arribar el
-100 km. Amb aquest codi calculem la mitjana del mateix model de
-cotxe.</p>
+<p>Ara internarem buscar X0to100 del NAs per marcar i intentarem
+arreglar 352 és impossible que un cotxe triga pràcticament 6 minuts a
+arribar els 100 km. Amb aquest codi calculem la mitjana del mateix model
+de cotxe.</p>
 <pre class="r"><code>x_neta &lt;- x_neta %&gt;%
   # 1. Convertim l&#39;error (352) en NA perquè es pugui imputar
   mutate(X0to100 = ifelse(X0to100 &gt; 50, NA, X0to100)) %&gt;%
@@ -735,13 +735,15 @@ cotxe.</p>
 summary(x_neta$X0to100)</code></pre>
 <pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
 ##   3.900   8.500  10.200   9.885  11.200  17.500      13</code></pre>
-<p>Aquest 13 valors han quedat buits perquè, segurament, pertanyen a
-marques on el el dataset no hi ha registres d’acceleració de Marca o
-model. Per solucionar-ho definitivament i arribar a 0 NAs, aplicarem la
-mediana global del dataset només a aquests 13 casos restants. He fet
-servir la mediana (el valor central) en lloc de la mitjana perquè és més
-segura: evita que els cotxes esportius molt ràpids o els camions molt
-lents distorsionin el valor que els donem a aquests 13 cotxes.</p>
+<p>Aquests 13 valors han quedat buits perquè, segurament, pertanyen a
+marques on en el dataset no hi ha registres d’acceleració de Marca o
+model.</p>
+<p>Per solucionar-ho definitivament i arribar a 0 NAs, aplicarem la
+mediana global del dataset només a aquests 13 casos restants.</p>
+<p>He fet servir la mediana (el valor central) en lloc de la mitjana
+perquè és més segura: evita que els cotxes esportius molt ràpids o els
+camions molt lents distorsionin el valor que els donem a aquests 13
+cotxes.</p>
 <pre class="r"><code># Imputació final amb la mediana de tot el dataset per als casos orfes
 x_neta &lt;- x_neta %&gt;%
   mutate(X0to100 = ifelse(is.na(X0to100), 
@@ -781,8 +783,8 @@ summary(x_neta$X0to100)</code></pre>
 </div>
 <div id="noves-columnes" class="section level2">
 <h2>Noves columnes</h2>
-<p>Aquestes mesures les pensava crear amb DAx per fer les grafiques a
-Power BI pero en aquest cas les creare com a noves columnes:</p>
+<p>Aquestes mesures les pensava crear amb DAX per fer les gràfiques a
+Power BI però en aquest cas les crearé com a noves columnes:</p>
 <p>Antiguitat: Variable fonamental per a l’Anàlisi de Depreciació. Ens
 permet segmentar el dataset en cotxes “Nous”, “Semi-nous” i “Vells”.</p>
 <p>Ràtio Potència/Pes: Mesura l’agilitat del cotxe. És la mètrica
@@ -790,11 +792,11 @@ d’originalitat que ens demanaven. Un valor alt indica un cotxe esportiu
 o molt eficient en la seva relació pes-potència.</p>
 <p>Tram_KM: Agrupa els KM. Permet comparar si Seat aguanta millor el
 preu que Peugeot en el tram de “50k-100k”</p>
-<p>Preu_per_CV:Indica quant paga el client per cada unitat de potència.
+<p>Preu_per_CV: Indica quant paga el client per cada unitat de potència.
 Molt útil per comparar si les marques “Premium” (BMW, Mercedes) cobren
 el cavall de potència més car que les marques “Generalistes” (Seat,
 KIA).</p>
-<p>Preu perkme:Relaciona el valor residual del cotxe amb el seu ús. Els
+<p>Preu perkme: Relaciona el valor residual del cotxe amb el seu ús. Els
 cotxes amb un valor molt baix aquí són els que més s’han devaluat per
 quilòmetre recorregut.</p>
 <p>Depreciació Anual: És una aproximació de la pèrdua de valor. Ens diu,
