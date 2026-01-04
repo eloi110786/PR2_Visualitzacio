@@ -263,72 +263,8 @@ x_final <- x_neta %>%
 # Comprovem que tot s'ha creat correctament
 summary(x_final[, c("Antiguitat", "Ratio_Pot_Pes", "Preu_per_CV", "Depreciacio_Anual", "Preu_per_KM")])
 ```
-##Visualitzacions
-### Gràfic de Correlació (Heatmap)
-
-Mostra d'un cop d'ull quines variables influeixen realment en el preu. Si el coeficient és proper a 1, la relació és directa.
 
 
-```{r grafic_correlació, echo=TRUE}
-
-# Millorem l'estètica i guardem en alta resolució
-png("correlacio_final.png", width = 1000, height = 1000, res = 120) # Crea un fitxer d'alta qualitat
-
-library(corrplot)
-library(RColorBrewer) # Per a millors colors
-
-# 1. Selecció neta de variables
-vars_video <- x_final %>% 
-  select(Price, KM, CV, Weight, Antiguitat, 
-         Ratio_Pot_Pes, Preu_per_CV, Preu_per_KM)
-
-# 2. Matriu
-M <- cor(vars_video, use="complete.obs")
-
-# 3. Gràfic estilitzat
-corrplot(M, 
-         method = "color",           # Quadrats de color més moderns
-         col = brewer.pal(n = 8, name = "RdBu"), # Blau (positiu) i Vermell (negatiu)
-         type = "upper",             # Només la part de dalt
-         order = "hclust",           # Agrupa variables que es comporten igual
-         addCoef.col = "black",      # Números en negre
-         number.cex = 0.8,           # Mida dels números
-         tl.col = "black",           # Color de les etiquetes
-         tl.srt = 45,                # Angle de les lletres
-         tl.cex = 1.1,               # Mida de les lletres (més grans)
-         diag = FALSE,               # Treiem la diagonal (que sempre és 1)
-         mar = c(0,0,2,0),
-         title = "Factors que influeixen en el preu del vehicle")
-
-dev.off() # Tanca el fitxer i el guarda
-```
-### La Corba de Depreciació Real
-
-Ara mostra la corba de epeteciació real
-
-
-```{r grafic_correlació_2, echo=TRUE}
-# Preparem el fitxer d'alta resolució
-png("depreciacio_km_final.png", width = 1200, height = 800, res = 120)
-
-# Creem el gràfic
-ggplot(x_final, aes(x = KM, y = Price)) +
-  # Punts en blau molt claret per no saturar
-  geom_point(alpha = 0.2, color = "#3498db", size = 1) + 
-  # La línia de tendència "suau" en vermell
-  geom_smooth(method = "gam", color = "#e74c3c", size = 1.5) +
-  # Posem noms clars als eixos
-  labs(title = "Anàlisi de Depreciació: Com cau el preu segons el quilometratge",
-       subtitle = "La línia vermella mostra la pèrdua de valor real del mercat",
-       x = "Quilòmetres recorreguts (KM)", 
-       y = "Preu de venda (€)") +
-  # Un disseny net i professional
-  theme_minimal() +
-  theme(plot.title = element_text(face = "bold", size = 16))
-
-dev.off() # Hauria de tornar a dir "null device 1"
-
-```
 
 ## Exportem dataset:
 ```{r export_dataset, echo=TRUE}
