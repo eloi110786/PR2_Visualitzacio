@@ -221,17 +221,17 @@ summary(x_neta[, variables_utilitat])
 
 Aquestes mesures les pensava crear amb DAX per fer les gràfiques a Power BI però en aquest cas les crearé com a noves columnes:
 
-Antiguitat: Variable fonamental per a l'Anàlisi de Depreciació. Ens permet segmentar el dataset en cotxes "Nous", "Semi-nous" i "Vells".
+**Antiguita**t: Variable fonamental per a l'Anàlisi de Depreciació. Ens permet segmentar el dataset en cotxes "Nous", "Semi-nous" i "Vells".
 
-Ràtio Potència/Pes: Mesura l'agilitat del cotxe. És la mètrica d'originalitat que ens demanaven. Un valor alt indica un cotxe esportiu o molt eficient en la seva relació pes-potència.
+**Ràtio Potència/Pes**: Mesura l'agilitat del cotxe. És la mètrica d'originalitat que ens demanaven. Un valor alt indica un cotxe esportiu o molt eficient en la seva relació pes-potència.
 
-Tram_KM: Agrupa els KM. Permet comparar si Seat aguanta millor el preu que Peugeot en el tram de "50k-100k"
+**Tram_KM: Agrupa els KM**. Permet comparar si Seat aguanta millor el preu que Peugeot en el tram de "50k-100k"
 
-Preu_per_CV: Indica quant paga el client per cada unitat de potència. Molt útil per comparar si les marques "Premium" (BMW, Mercedes) cobren el cavall de potència més car que les marques "Generalistes" (Seat, KIA).
+**Preu_per_CV**: Indica quant paga el client per cada unitat de potència. Molt útil per comparar si les marques "Premium" (BMW, Mercedes) cobren el cavall de potència més car que les marques "Generalistes" (Seat, KIA).
 
-Preu perkme: Relaciona el valor residual del cotxe amb el seu ús. Els cotxes amb un valor molt baix aquí són els que més s'han devaluat per quilòmetre recorregut.
+**Preu perkm**: Relaciona el valor residual del cotxe amb el seu ús. Els cotxes amb un valor molt baix aquí són els que més s'han devaluat per quilòmetre recorregut.
 
-Depreciació Anual: És una aproximació de la pèrdua de valor. Ens diu, de mitjana, quants euros val el cotxe per cada any que té.
+**Depreciació Anual**: És una aproximació de la pèrdua de valor. Ens diu, de mitjana, quants euros val el cotxe per cada any que té.
 
 
 ```{r noves_columnes, echo=TRUE}

@@ -785,22 +785,24 @@ summary(x_neta$X0to100)</code></pre>
 <h2>Noves columnes</h2>
 <p>Aquestes mesures les pensava crear amb DAX per fer les gràfiques a
 Power BI però en aquest cas les crearé com a noves columnes:</p>
-<p>Antiguitat: Variable fonamental per a l’Anàlisi de Depreciació. Ens
-permet segmentar el dataset en cotxes “Nous”, “Semi-nous” i “Vells”.</p>
-<p>Ràtio Potència/Pes: Mesura l’agilitat del cotxe. És la mètrica
-d’originalitat que ens demanaven. Un valor alt indica un cotxe esportiu
-o molt eficient en la seva relació pes-potència.</p>
-<p>Tram_KM: Agrupa els KM. Permet comparar si Seat aguanta millor el
-preu que Peugeot en el tram de “50k-100k”</p>
-<p>Preu_per_CV: Indica quant paga el client per cada unitat de potència.
-Molt útil per comparar si les marques “Premium” (BMW, Mercedes) cobren
-el cavall de potència més car que les marques “Generalistes” (Seat,
-KIA).</p>
-<p>Preu perkme: Relaciona el valor residual del cotxe amb el seu ús. Els
-cotxes amb un valor molt baix aquí són els que més s’han devaluat per
-quilòmetre recorregut.</p>
-<p>Depreciació Anual: És una aproximació de la pèrdua de valor. Ens diu,
-de mitjana, quants euros val el cotxe per cada any que té.</p>
+<p><strong>Antiguita</strong>t: Variable fonamental per a l’Anàlisi de
+Depreciació. Ens permet segmentar el dataset en cotxes “Nous”,
+“Semi-nous” i “Vells”.</p>
+<p><strong>Ràtio Potència/Pes</strong>: Mesura l’agilitat del cotxe. És
+la mètrica d’originalitat que ens demanaven. Un valor alt indica un
+cotxe esportiu o molt eficient en la seva relació pes-potència.</p>
+<p><strong>Tram_KM: Agrupa els KM</strong>. Permet comparar si Seat
+aguanta millor el preu que Peugeot en el tram de “50k-100k”</p>
+<p><strong>Preu_per_CV</strong>: Indica quant paga el client per cada
+unitat de potència. Molt útil per comparar si les marques “Premium”
+(BMW, Mercedes) cobren el cavall de potència més car que les marques
+“Generalistes” (Seat, KIA).</p>
+<p><strong>Preu perkm</strong>: Relaciona el valor residual del cotxe
+amb el seu ús. Els cotxes amb un valor molt baix aquí són els que més
+s’han devaluat per quilòmetre recorregut.</p>
+<p><strong>Depreciació Anual</strong>: És una aproximació de la pèrdua
+de valor. Ens diu, de mitjana, quants euros val el cotxe per cada any
+que té.</p>
 <pre class="r"><code>x_final &lt;- x_neta %&gt;%
   mutate(
     # 1. ANTIGUITAT (Pregunta Geoespacial)
