@@ -2,7 +2,7 @@
 
 Aqui es pot trobar els arxius de la PR2 de Visualitzacio:
 
-1- Enllaç Dashboard: https://app.powerbi.com/view?r=eyJrIjoiODgwOWMxNWMtZDk0NS00MDJmLTk3NTItOWMyYTIwNDljNDY2IiwidCI6ImFlYzc2MmU0LTNkNTQtNDk1ZS1hOGZlLTQyODdkY2U2ZmU2OSIsImMiOjh9
+1- Enllaç Dashboard: https://app.powerbi.com/view?r=eyJrIjoiNjYzOTQ2YjctMTZiMi00ZWQ3LWJjOTMtZjQ3OTcxMGJiMjVjIiwidCI6ImFlYzc2MmU0LTNkNTQtNDk1ZS1hOGZlLTQyODdkY2U2ZmU2OSIsImMiOjh9
 
 2- Arxiu R (PR2_Eloi_Arjona.rmd)
 
