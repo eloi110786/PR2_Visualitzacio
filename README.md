@@ -8,14 +8,10 @@ Aqui es pot trobar els arxius de la PR2 de Visualitzacio:
 
 3- HTMAL R (PR2_Eloi_Arjona.html)
 
-4- Visualització R (correlacio_final.png)
+4- Arxiu Power BI (PR2_Eloi_Arjonav3.pbix)
 
-5- Visualització R (depreciacio_km_final.png)
+5- Dataset original (autos_espana.csv)
 
-6- Arxiu Power BI (PR2_Eloi_Arjonav3.pbix)
+6- Dataset net (dataset_final_cotxe.csv)
 
-7- Dataset original (autos_espana.csv)
-
-9- Dataset net (dataset_final_cotxe.csv)
-
-10 - web del dataset https://www.kaggle.com/datasets/gandpablo/cars-prices-for-machine-learning
+7 - web del dataset https://www.kaggle.com/datasets/gandpablo/cars-prices-for-machine-learning
